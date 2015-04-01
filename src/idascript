@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+###############################################################
+# Python version of the idascript utility for IDA.
+#
+# Original idascript utility: http://www.hexblog.com/?p=128
+#
+# Craig Heffner
+# 14-November-2012
+# http://www.tacnetsol.com
+# http://www.devttys0.com
+###############################################################
+
+import os
+import sys
+import tempfile
+import subprocess
+
+idc_args = ['__idascript_active__']
+IDA_INSTALL_PATH = "%%IDA_INSTALL_PATH%%"
+OUTFILE = os.path.join(tempfile.gettempdir(), 'ida_script_stdout.txt')
+
+# Check usage
+if len(sys.argv) < 2:
+    print ""
+    print "Usage: %s [--64bit] <target file> <ida script file> [script arguments]" % os.path.basename(sys.argv[0])
+    print ""
+    sys.exit(1)
+
+# Always use the 64-bit version of IDA if it was explicitly specified
+if sys.argv[1] == '--64bit':
+    suffix = '64'
+    sys.argv.pop(1)
+else:
+    suffix = ''
+
+# Get IDB / script file from command line
+if len(sys.argv) >= 3:
+    idb = os.path.abspath(sys.argv[1])
+    idc = os.path.abspath(sys.argv[2])
+    idc_args += sys.argv[3:]
+    
+    if idb.endswith('.i64'):
+        suffix = '64'
+else:
+    idc = os.path.abspath(sys.argv[1])
+    idb = "-t"
+    idc_args += sys.argv[2:]
+
+# Use the right IDA executable for the right platform
+if sys.platform == 'win32':
+    ida = 'idaw' + suffix
+else:
+    ida = 'idal' + suffix
+
+# Windows has a .exe file extension
+if sys.platform == 'win32':
+    ida += '.exe'
+
+# Clean up output file, just in case
+if os.path.exists(OUTFILE):
+    os.unlink(OUTFILE)
+
+# Run IDA
+subprocess.call([os.path.join(IDA_INSTALL_PATH, ida), '-A', '-S' + idc + ' ' + ' '.join(idc_args), idb])
+
+# Display contents of output file, then clean up
+if os.path.exists(OUTFILE):
+    print ''
+    print open(OUTFILE).read(),
+    os.unlink(OUTFILE)
+

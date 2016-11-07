@@ -4,7 +4,7 @@ ABOUT
 	against target files from the command line.
 	
 	This version of idascript is based on the original idascript from Hex-Rays, but is written in Python
-	for platform independance (disclaimer: currently only tested on Linux!).
+	for platform independance (disclaimer: currently only tested on Linux and OSX!).
 
 	For more information on idascript, see the original idascript utility here: http://www.hexblog.com/?p=128
 

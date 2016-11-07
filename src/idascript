@@ -17,6 +17,12 @@ import tempfile
 import subprocess
 
 IDA_INSTALL_PATH = "%%IDA_INSTALL_PATH%%"
+try:
+    import magic
+except:
+    print("libmagic module not found, automatic detection of 64bit binaries won't work", file=sys.stderr)
+    magic = None
+
 fd, OUTFILE = tempfile.mkstemp()
 idc_args = ['__idascript_active__', OUTFILE]
 
@@ -42,6 +48,16 @@ if len(sys.argv) >= 3:
 
     if idb.endswith('.i64'):
         suffix = '64'
+
+    if not magic is None:
+        try:
+            m=magic.open(magic.MAGIC_NONE)
+            m.load()
+            if '64-bit' in m.file(idb):
+                suffix = '64'
+        except:
+            print("The 'import magic' module is not from the expected 'file-magic' package. Automatic detection of 64bit binaries won't work.", file=sys.stderr)
+
 else:
     idc = os.path.abspath(sys.argv[1])
     idb = "-t"

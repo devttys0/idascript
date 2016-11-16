@@ -50,8 +50,10 @@ def loadAllPythonPlugins():
 if len(idc.ARGV) > 1 and idc.ARGV[1] == '__idascript_active__':
     __idascript_active__ = True
     idc.ARGV.pop(1)
+    outfile=idc.ARGV.pop(1)
+
     # Redirect stdout and stderr to the output file
-    sys.stdout = sys.stderr = ToFileStdOut(os.path.join(tempfile.gettempdir(), 'ida_script_stdout.txt'))
+    sys.stdout = sys.stderr = ToFileStdOut(os.path.join(tempfile.gettempdir(), outfile))
     # Make the normal sys.argv and sys.exit function properly
     sys.argv = idc.ARGV
     sys.exit = idc.Exit

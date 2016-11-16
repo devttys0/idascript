@@ -15,9 +15,9 @@ import sys
 import tempfile
 import subprocess
 
-idc_args = ['__idascript_active__']
 IDA_INSTALL_PATH = "%%IDA_INSTALL_PATH%%"
-OUTFILE = os.path.join(tempfile.gettempdir(), 'ida_script_stdout.txt')
+fd, OUTFILE = tempfile.mkstemp()
+idc_args = ['__idascript_active__', OUTFILE]
 
 # Check usage
 if len(sys.argv) < 2:
@@ -38,7 +38,7 @@ if len(sys.argv) >= 3:
     idb = os.path.abspath(sys.argv[1])
     idc = os.path.abspath(sys.argv[2])
     idc_args += sys.argv[3:]
-    
+
     if idb.endswith('.i64'):
         suffix = '64'
 else:
@@ -55,10 +55,6 @@ else:
 # Windows has a .exe file extension
 if sys.platform == 'win32':
     ida += '.exe'
-
-# Clean up output file, just in case
-if os.path.exists(OUTFILE):
-    os.unlink(OUTFILE)
 
 # Run IDA
 subprocess.call([os.path.join(IDA_INSTALL_PATH, ida), '-A', '-S' + idc + ' ' + ' '.join(idc_args), idb])

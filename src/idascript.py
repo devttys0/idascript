@@ -14,6 +14,9 @@ import sys
 import tempfile
 import idc
 import idaapi
+import re
+
+import traceback
 
 __idascript_active__ = False
 
@@ -37,6 +40,13 @@ class ToFileStdOut(object):
     def __del__(self):
         self.outfile.close()
 
+def loadAllPythonPlugins():
+    plugins_dir = idaapi.idadir('plugins')
+    print("idascript: loading all .py plugins in %s" % plugins_dir)
+    files = [f for f in os.listdir(plugins_dir) if re.match(r'.*\.py', f)]
+    for path in files:
+        idaapi.load_plugin(path)
+
 if len(idc.ARGV) > 1 and idc.ARGV[1] == '__idascript_active__':
     __idascript_active__ = True
     idc.ARGV.pop(1)
@@ -45,6 +55,13 @@ if len(idc.ARGV) > 1 and idc.ARGV[1] == '__idascript_active__':
     # Make the normal sys.argv and sys.exit function properly
     sys.argv = idc.ARGV
     sys.exit = idc.Exit
+
+    try:
+        loadAllPythonPlugins()
+    except:
+        traceback.print_exc()
+        exit(1)
+
     # Wait for IDA's auto analysis to finish
     idaapi.autoWait()
 

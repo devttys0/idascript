@@ -10,6 +10,7 @@
 # http://www.devttys0.com
 ###############################################################
 
+from __future__ import print_function
 import os
 import sys
 import tempfile
@@ -21,9 +22,9 @@ idc_args = ['__idascript_active__', OUTFILE]
 
 # Check usage
 if len(sys.argv) < 2:
-    print ""
-    print "Usage: %s [--64bit] <target file> <ida script file> [script arguments]" % os.path.basename(sys.argv[0])
-    print ""
+    print("", file=sys.stderr)
+    print("Usage: %s [--64bit] <target file> <ida script file> [script arguments]" % os.path.basename(sys.argv[0]), file=sys.stderr)
+    print("", file=sys.stderr)
     sys.exit(1)
 
 # Always use the 64-bit version of IDA if it was explicitly specified
@@ -61,7 +62,7 @@ subprocess.call([os.path.join(IDA_INSTALL_PATH, ida), '-A', '-S' + idc + ' ' + '
 
 # Display contents of output file, then clean up
 if os.path.exists(OUTFILE):
-    print ''
-    print open(OUTFILE).read(),
+    print("")
+    print(open(OUTFILE).read())
     os.unlink(OUTFILE)
 

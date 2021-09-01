@@ -17,14 +17,15 @@ import tempfile
 import subprocess
 
 IDA_INSTALL_PATH = "%%IDA_INSTALL_PATH%%"
+
 try:
     import magic
 except:
-    print("libmagic module not found, automatic detection of 64bit binaries won't work", file=sys.stderr)
+    print("libmagic module not found, automatic detection of 64bit binaries won't work (try to pip install python-magic-bin==0.4.14)", file=sys.stderr)
     magic = None
 
-fd, OUTFILE = tempfile.mkstemp()
-idc_args = ['__idascript_active__', OUTFILE]
+fp = tempfile.NamedTemporaryFile(delete=False)
+idc_args = ['__idascript_active__', fp.name]
 
 # Check usage
 if len(sys.argv) < 2:
@@ -51,9 +52,8 @@ if len(sys.argv) >= 3:
 
     if not magic is None:
         try:
-            m=magic.open(magic.MAGIC_NONE)
-            m.load()
-            if '64-bit' in m.file(idb):
+            m=magic.Magic(magic.MAGIC_NONE)
+            if '64-bit' in m.from_file(idb):
                 suffix = '64'
         except:
             print("The 'import magic' module is not from the expected 'file-magic' package. Automatic detection of 64bit binaries won't work.", file=sys.stderr)
@@ -65,9 +65,9 @@ else:
 
 # Use the right IDA executable for the right platform
 if sys.platform == 'win32':
-    ida = 'idaw' + suffix
+    ida = 'ida' + suffix
 else:
-    ida = 'idal' + suffix
+    ida = 'ida' + suffix
 
 # Windows has a .exe file extension
 if sys.platform == 'win32':
@@ -77,8 +77,9 @@ if sys.platform == 'win32':
 subprocess.call([os.path.join(IDA_INSTALL_PATH, ida), '-A', '-S' + idc + ' ' + ' '.join(idc_args), idb])
 
 # Display contents of output file, then clean up
-if os.path.exists(OUTFILE):
+if os.path.exists(fp.name):
     print("")
-    print(open(OUTFILE).read())
-    os.unlink(OUTFILE)
+    print(open(fp.name).read())
+    fp.close()
+    os.unlink(fp.name)
 
